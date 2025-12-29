@@ -1,0 +1,233 @@
+AniTrack 
+
+Analysis 
+
+1. Project overview
+
+AniTrack is a console application for managing a personal Anime Watchlist. A user can add anime titles to their list and store basic tracking information for each title:
+
+watch state (Watching / Plan to Watch / Completed / Dropped),
+
+rating 0–10 (optional),
+
+progress (how many episodes the user has watched).
+
+The application persists data in a MySQL relational database and the database access layer follows the Table Gateway pattern (D1). Runtime settings (especially DB connection) are provided through a configuration file.
+
+2. Application features
+2.1 Users
+
+create user,
+
+delete user.
+
+2.2 Watchlist
+
+add anime to the user’s watchlist,
+
+update a watchlist entry (state, rating, progress),
+
+remove anime from the watchlist,
+
+display watchlist (e.g., filter by state).
+
+2.3 Change history
+
+The application stores a history of changes for watchlist entries. Whenever a user updates a watchlist entry (e.g., state or rating), the system records the old values and the new values.
+
+2.4 Summary report
+
+AniTrack can generate a user summary report containing aggregated statistics (counts, averages, min/max) across multiple tables.
+
+3. Data model (tables and attributes)
+3.1 users
+
+Stores system users.
+
+id (PK)
+
+username (varchar, unique)
+
+email (varchar, unique)
+
+is_admin (bool)
+
+created_at (datetime)
+
+3.2 anime
+
+Global catalog of anime titles.
+
+id (PK)
+
+title_romaji (varchar)
+
+title_english (varchar, nullable)
+
+episodes_total (int)
+
+status (enum: ONGOING, FINISHED)
+
+start_date (date, nullable)
+
+external_score (float, nullable)
+
+created_at (datetime)
+
+3.3 watchlist_entries
+
+Link between a user and an anime title + user-specific tracking data.
+
+user_id (FK → users)
+
+anime_id (FK → anime)
+
+state (enum: WATCHING, PLAN_TO_WATCH, COMPLETED, DROPPED)
+
+rating (tinyint 0–10, nullable)
+
+progress (int)
+
+updated_at (datetime)
+Primary key: (user_id, anime_id)
+
+Key note: rating is not an attribute of the anime itself. It is user-specific, therefore it belongs in watchlist_entries.
+
+3.4 genres
+
+List of genres.
+
+id (PK)
+
+name (varchar, unique)
+
+3.5 anime_genres
+
+Join table for the M:N relationship (anime ↔ genres).
+
+anime_id (FK → anime)
+
+genre_id (FK → genres)
+Primary key: (anime_id, genre_id)
+
+3.6 watchlist_history
+
+Stores watchlist change history.
+
+id (PK)
+
+user_id (FK → users)
+
+anime_id (FK → anime)
+
+changed_at (datetime)
+
+old_state (enum)
+
+new_state (enum)
+
+old_rating (tinyint, nullable)
+
+new_rating (tinyint, nullable)
+
+old_progress (int)
+
+new_progress (int)
+
+4. Database access (D1 – Table Gateway)
+
+The database layer is organized so that each table is handled by a dedicated gateway class, containing the SQL operations for that table (CRUD + selected queries). Typical gateways:
+
+UserGateway
+
+AnimeGateway
+
+WatchlistEntryGateway
+
+GenreGateway
+
+AnimeGenreGateway
+
+WatchlistHistoryGateway
+
+Higher-level operations (such as transactions) are implemented in a service layer that coordinates multiple gateways.
+
+5. Configuration file
+
+The application reads settings from a configuration file 
+
+6. Summary report (aggregations across 3+ tables)
+
+A basic user summary report contains:
+
+Counts by watch state
+(WATCHING / PLAN_TO_WATCH / COMPLETED / DROPPED)
+
+Rating statistics
+average, minimum, and maximum (computed from watchlist_entries.rating where rating is present)
+
+Top genres (typically for COMPLETED titles or the whole list)
+genre counts via anime_genres
+
+This report uses at least the following tables:
+watchlist_entries + anime + anime_genres + genres.
+
+7. Requirements compliance (item-by-item)
+D1 – Table Gateway / DAO / Repository
+
+Satisfied: The solution uses the Table Gateway pattern (dedicated gateway classes per table).
+
+1) Real relational DBMS (not SQLite)
+
+Satisfied: MySQL (managed via MySQL Workbench).
+
+2) Minimum 5 tables, 2× views, 1× M:N relationship
+
+Tables: satisfied (6 tables including join tables).
+
+M:N relationship: satisfied (anime ↔ genres via anime_genres).
+
+2× views: planned to be added as database views based on existing tables (e.g., anime-with-genres view and watchlist summary view).
+
+3) Required data types present
+
+Satisfied:
+
+float: anime.external_score
+
+bool: users.is_admin
+
+enum: anime.status, watchlist_entries.state
+
+varchar: users.username, anime.title_romaji, …
+
+date/datetime: anime.start_date, users.created_at, watchlist_entries.updated_at
+
+4) CRUD over information stored in more than one table
+
+Satisfied: Updating a watchlist entry affects watchlist_entries and also appends an entry into watchlist_history.
+
+5) At least one transaction over multiple tables
+
+Satisfied: Updating a watchlist entry is done transactionally:
+
+UPDATE watchlist_entries
+
+INSERT watchlist_history
+If any step fails, the transaction is rolled back.
+
+6) Summary report with meaningful aggregated data from at least three tables
+
+Satisfied: The report uses watchlist_entries, anime, anime_genres, genres and includes COUNT/AVG/MIN/MAX.
+
+7) Import into at least two tables (CSV/XML/JSON)
+
+Satisfied: A typical approach is importing the anime catalog and importing genres/join-table mappings from CSV/JSON.
+
+8) Program configuration via a config file
+
+Satisfied: DB connection and selected settings are loaded from the configuration file.
+
+9) Input validation and error handling
+
+Satisfied: Validation (rating range, progress constraints, ID existence) and handling configuration/DB errors (missing config, failed DB connection, transaction rollback behavior).
