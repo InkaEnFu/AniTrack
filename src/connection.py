@@ -20,7 +20,7 @@ class DatabaseConnection:
                 password="heslo",
                 database="animelist"
             )
-            print("Úspěšně připojeno k databázi.")
+            print("Successfully connected to database.")
         return self._connection
     
     def close(self):
