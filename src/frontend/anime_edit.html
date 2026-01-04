@@ -27,6 +27,16 @@
     <label>External Score</label>
     <input type="number" name="external_score" step="0.1" min="0" max="10" value="{{ anime[6] or '' }}">
     
+    <label>Genres</label>
+    <div class="checkbox-group">
+        {% for genre in genres %}
+        <label>
+            <input type="checkbox" name="genres" value="{{ genre[0] }}" {% if genre[0] in current_genres %}checked{% endif %}>
+            {{ genre[1] }}
+        </label>
+        {% endfor %}
+    </div>
+    
     <button type="submit" class="btn">Update Anime</button>
     <a href="/anime" style="color: #aaa; margin-left: 15px;">Cancel</a>
 </form>

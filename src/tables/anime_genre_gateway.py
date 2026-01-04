@@ -28,3 +28,20 @@ class AnimeGenreGateway:
         row = cursor.fetchone()
         cursor.close()
         return row
+    
+    def select_by_anime_id(self, anime_id: int) -> list:
+        conn = self.db.get_connection()
+        cursor = conn.cursor()
+        cursor.execute(f"SELECT genre_id FROM {self.table_name} WHERE anime_id = %s", (anime_id,))
+        rows = cursor.fetchall()
+        cursor.close()
+        return [row[0] for row in rows]
+    
+    def delete_by_anime_id(self, anime_id: int) -> bool:
+        conn = self.db.get_connection()
+        cursor = conn.cursor()
+        cursor.execute(f"DELETE FROM {self.table_name} WHERE anime_id = %s", (anime_id,))
+        conn.commit()
+        affected = cursor.rowcount
+        cursor.close()
+        return affected > 0
