@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block title %}Transfer Anime - Animelist{% endblock %}
+
+{% block content %}
+<h1>Transfer Anime Between Users</h1>
+<p style="color: #aaa; margin-bottom: 20px;">Transfer an anime watchlist entry from one user to another (uses database transaction)</p>
+
+<form method="POST">
+    <label>From User *</label>
+    <select name="from_user_id" required>
+        <option value="">-- Select source user --</option>
+        {% for user in users %}
+        <option value="{{ user[0] }}">{{ user[1] }}</option>
+        {% endfor %}
+    </select>
+    
+    <label>To User *</label>
+    <select name="to_user_id" required>
+        <option value="">-- Select target user --</option>
+        {% for user in users %}
+        <option value="{{ user[0] }}">{{ user[1] }}</option>
+        {% endfor %}
+    </select>
+    
+    <label>Anime *</label>
+    <select name="anime_id" required>
+        <option value="">-- Select anime --</option>
+        {% for a in anime %}
+        <option value="{{ a[0] }}">{{ a[1] }}</option>
+        {% endfor %}
+    </select>
+    
+    <button type="submit" class="btn">Transfer Anime</button>
+    <a href="/watchlist" style="color: #aaa; margin-left: 15px;">Cancel</a>
+</form>
+
+<div style="margin-top: 30px; padding: 20px; background: #16213e; border-radius: 10px;">
+    <h3 style="color: #e94560;">How it works:</h3>
+    <ol style="color: #aaa; line-height: 1.8;">
+        <li>Checks if source user has the anime in their watchlist</li>
+        <li>Checks if target user doesn't already have the anime</li>
+        <li>Deletes entry from source user's watchlist</li>
+        <li>Creates entry in target user's watchlist with same status, rating and progress</li>
+        <li>All operations happen in a single transaction - if any step fails, all changes are rolled back</li>
+    </ol>
+</div>
+{% endblock %}

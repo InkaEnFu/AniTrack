@@ -301,5 +301,65 @@ def history(user_id):
     return render_template('history.html', entries=entries, user_id=user_id)
 
 
+@app.route('/transfer', methods=['GET', 'POST'])
+def transfer_anime():
+    conn = db.get_connection()
+    cursor = conn.cursor()
+    
+    if request.method == 'POST':
+        from_user_id = int(request.form['from_user_id'])
+        to_user_id = int(request.form['to_user_id'])
+        anime_id = int(request.form['anime_id'])
+        
+        try:
+            conn.autocommit = False
+            
+            cursor.execute("""
+                SELECT state, rating, progress FROM watchlist_entries 
+                WHERE user_id = %s AND anime_id = %s
+            """, (from_user_id, anime_id))
+            entry = cursor.fetchone()
+            
+            if not entry:
+                conn.rollback()
+                flash('Source user does not have this anime in watchlist', 'error')
+                return redirect(url_for('transfer_anime'))
+            
+            cursor.execute("""
+                SELECT 1 FROM watchlist_entries 
+                WHERE user_id = %s AND anime_id = %s
+            """, (to_user_id, anime_id))
+            if cursor.fetchone():
+                conn.rollback()
+                flash('Target user already has this anime in watchlist', 'error')
+                return redirect(url_for('transfer_anime'))
+            
+            cursor.execute("""
+                DELETE FROM watchlist_entries 
+                WHERE user_id = %s AND anime_id = %s
+            """, (from_user_id, anime_id))
+            
+            cursor.execute("""
+                INSERT INTO watchlist_entries (user_id, anime_id, state, rating, progress)
+                VALUES (%s, %s, %s, %s, %s)
+            """, (to_user_id, anime_id, entry[0], entry[1], entry[2]))
+            
+            conn.commit()
+            flash(f'Anime successfully transferred from user {from_user_id} to user {to_user_id}', 'success')
+            return redirect(url_for('watchlist'))
+            
+        except Exception as e:
+            conn.rollback()
+            flash(f'Transaction failed: {e}', 'error')
+    
+    cursor.execute("SELECT id, username FROM users")
+    users = cursor.fetchall()
+    cursor.execute("SELECT id, title_romaji FROM anime")
+    anime = cursor.fetchall()
+    cursor.close()
+    
+    return render_template('transfer.html', users=users, anime=anime)
+
+
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
