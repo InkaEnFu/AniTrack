@@ -27,3 +27,11 @@ class GenreGateway:
         row = cursor.fetchone()
         cursor.close()
         return row
+    
+    def select_all(self) -> list:
+        conn = self.db.get_connection()
+        cursor = conn.cursor()
+        cursor.execute(f"SELECT * FROM {self.table_name} ORDER BY id")
+        rows = cursor.fetchall()
+        cursor.close()
+        return rows

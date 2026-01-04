@@ -95,10 +95,32 @@ class Menu:
         score_str = input("External score (optional): ").strip()
         external_score = float(score_str) if score_str else None
         
+        genres = self.genre_gw.select_all()
+        selected_genre_ids = []
+        if genres:
+            print("\nAvailable genres:")
+            for genre in genres:
+                print(f"  {genre[0]}. {genre[1]}")
+            print("\nEnter genre IDs separated by comma (e.g. 1,3,5) or leave empty:")
+            genres_input = input("Genres: ").strip()
+            if genres_input:
+                try:
+                    selected_genre_ids = [int(g.strip()) for g in genres_input.split(",")]
+                except ValueError:
+                    print("Invalid genre IDs, skipping genres.")
+                    selected_genre_ids = []
+        
         try:
             new_id = self.anime_gw.insert(title_romaji, status, title_english, 
                                           episodes_total, start_date, external_score)
             print(f"✓ Anime successfully added with ID: {new_id}")
+            
+            for genre_id in selected_genre_ids:
+                try:
+                    self.anime_genre_gw.insert(new_id, genre_id)
+                    print(f"✓ Genre {genre_id} assigned")
+                except Exception as e:
+                    print(f"✗ Failed to assign genre {genre_id}: {e}")
         except Exception as e:
             print(f"✗ Error adding: {e}")
     
