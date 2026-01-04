@@ -1,4 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
+import csv
+import io
 from connection import DatabaseConnection
 from tables.anime_gateway import AnimeGateway
 from tables.user_gateway import UserGateway
@@ -395,6 +397,55 @@ def report():
                            genre_count=genre_count,
                            watchlist_count=watchlist_count,
                            genres_stats=genres_stats)
+
+
+@app.route('/import', methods=['GET', 'POST'])
+def import_csv():
+    if request.method == 'POST':
+        import_type = request.form.get('import_type')
+        file = request.files.get('csv_file')
+        
+        if not file or file.filename == '':
+            flash('No file selected', 'error')
+            return redirect(url_for('import_csv'))
+        
+        if not file.filename.endswith('.csv'):
+            flash('File must be CSV format', 'error')
+            return redirect(url_for('import_csv'))
+        
+        try:
+            stream = io.StringIO(file.stream.read().decode('utf-8'))
+            reader = csv.DictReader(stream)
+            count = 0
+            
+            if import_type == 'anime':
+                for row in reader:
+                    title_romaji = row.get('title_romaji', '')
+                    title_english = row.get('title_english') or None
+                    episodes = int(row.get('episodes_total', 0) or 0)
+                    status = row.get('status', 'ONGOING')
+                    start_date = row.get('start_date') or None
+                    external_score = float(row.get('external_score')) if row.get('external_score') else None
+                    
+                    if title_romaji:
+                        anime_gw.insert(title_romaji, status, title_english, episodes, start_date, external_score)
+                        count += 1
+                        
+            elif import_type == 'genres':
+                for row in reader:
+                    name = row.get('name', '')
+                    if name:
+                        genre_gw.insert(name)
+                        count += 1
+            
+            flash(f'Successfully imported {count} records', 'success')
+            
+        except Exception as e:
+            flash(f'Import failed: {e}', 'error')
+        
+        return redirect(url_for('import_csv'))
+    
+    return render_template('import.html')
 
 
 if __name__ == '__main__':

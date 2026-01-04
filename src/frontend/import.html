@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block title %}Import CSV - Animelist{% endblock %}
+
+{% block content %}
+<h1>Import Data from CSV</h1>
+<p style="color: #aaa; margin-bottom: 30px;">Upload a CSV file to import data into the database</p>
+
+<form method="POST" enctype="multipart/form-data" style="max-width: 500px;">
+    <label>Import Type *</label>
+    <select name="import_type" required>
+        <option value="anime">Anime</option>
+        <option value="genres">Genres</option>
+    </select>
+    
+    <label>CSV File *</label>
+    <input type="file" name="csv_file" accept=".csv" required style="padding: 10px; background: #16213e; border: none; border-radius: 5px; color: #eee; width: 100%;">
+    
+    <button type="submit" class="btn" style="margin-top: 20px;">Import</button>
+</form>
+
+<div style="margin-top: 40px; padding: 20px; background: #16213e; border-radius: 10px;">
+    <h3 style="color: #e94560; margin-bottom: 15px;">CSV Format for Anime:</h3>
+    <code style="color: #aaa; display: block; background: #0f3460; padding: 15px; border-radius: 5px; overflow-x: auto;">
+title_romaji,title_english,episodes_total,status,start_date,external_score<br>
+Shingeki no Kyojin,Attack on Titan,25,FINISHED,2013-04-07,8.5<br>
+One Piece,,1000,ONGOING,1999-10-20,8.7
+    </code>
+</div>
+
+<div style="margin-top: 20px; padding: 20px; background: #16213e; border-radius: 10px;">
+    <h3 style="color: #e94560; margin-bottom: 15px;">CSV Format for Genres:</h3>
+    <code style="color: #aaa; display: block; background: #0f3460; padding: 15px; border-radius: 5px;">
+name<br>
+Action<br>
+Romance<br>
+Comedy
+    </code>
+</div>
+{% endblock %}
