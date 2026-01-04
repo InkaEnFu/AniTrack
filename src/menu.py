@@ -28,10 +28,8 @@ class Menu:
             elif choice == "3":
                 self._genre_menu()
             elif choice == "4":
-                self._anime_genre_menu()
-            elif choice == "5":
                 self._watchlist_entry_menu()
-            elif choice == "6":
+            elif choice == "5":
                 self._watchlist_history_menu()
             elif choice == "0":
                 print("Exiting application...")
@@ -46,9 +44,8 @@ class Menu:
         print("1. Manage anime")
         print("2. Manage users")
         print("3. Manage genres")
-        print("4. Manage anime-genres")
-        print("5. Manage watchlist entries")
-        print("6. Manage watchlist history")
+        print("4. Manage watchlist entries")
+        print("5. Manage watchlist history")
         print("0. Exit")
         print("=" * 50)
     
@@ -215,7 +212,7 @@ class Menu:
             print("      MANAGE GENRES")
             print("-" * 40)
             print("1. Add new genre")
-            print("2. Find genre by ID")
+            print("2. Show all genres")
             print("0. Back")
             print("-" * 40)
             
@@ -224,7 +221,7 @@ class Menu:
             if choice == "1":
                 self._genre_insert()
             elif choice == "2":
-                self._genre_select_by_id()
+                self._genre_show_all()
             elif choice == "0":
                 break
             else:
@@ -243,78 +240,19 @@ class Menu:
         except Exception as e:
             print(f"✗ Error adding: {e}")
     
-    def _genre_select_by_id(self):
-        print("\n--- Find genre ---")
-        id_str = input("Enter genre ID: ").strip()
+    def _genre_show_all(self):
+        print("\n--- All genres ---")
         
         try:
-            genre_id = int(id_str)
-            result = self.genre_gw.select_by_id(genre_id)
-            if result:
-                print(f"\nGenre found:")
-                print(f"  ID: {result[0]}")
-                print(f"  Name: {result[1]}")
+            genres = self.genre_gw.select_all()
+            if genres:
+                print(f"\nFound {len(genres)} genres:")
+                print("-" * 30)
+                for genre in genres:
+                    print(f"  {genre[0]}. {genre[1]}")
+                print("-" * 30)
             else:
-                print("Genre with this ID was not found.")
-        except ValueError:
-            print("Invalid ID!")
-        except Exception as e:
-            print(f"✗ Error: {e}")
-    
-    def _anime_genre_menu(self):
-        while True:
-            print("\n" + "-" * 40)
-            print("      MANAGE ANIME-GENRES")
-            print("-" * 40)
-            print("1. Assign genre to anime")
-            print("2. Find link")
-            print("0. Back")
-            print("-" * 40)
-            
-            choice = input("Enter choice: ").strip()
-            
-            if choice == "1":
-                self._anime_genre_insert()
-            elif choice == "2":
-                self._anime_genre_select_by_id()
-            elif choice == "0":
-                break
-            else:
-                print("Invalid choice.")
-    
-    def _anime_genre_insert(self):
-        print("\n--- Assign genre to anime ---")
-        
-        try:
-            anime_id = int(input("Anime ID *: ").strip())
-            genre_id = int(input("Genre ID *: ").strip())
-            
-            success = self.anime_genre_gw.insert(anime_id, genre_id)
-            if success:
-                print(f"✓ Genre successfully assigned to anime.")
-            else:
-                print("✗ Failed to assign genre.")
-        except ValueError:
-            print("Invalid ID!")
-        except Exception as e:
-            print(f"✗ Error adding: {e}")
-    
-    def _anime_genre_select_by_id(self):
-        print("\n--- Find anime-genre link ---")
-        
-        try:
-            anime_id = int(input("Anime ID: ").strip())
-            genre_id = int(input("Genre ID: ").strip())
-            
-            result = self.anime_genre_gw.select_by_id(anime_id, genre_id)
-            if result:
-                print(f"\nLink found:")
-                print(f"  Anime ID: {result[0]}")
-                print(f"  Genre ID: {result[1]}")
-            else:
-                print("Link was not found.")
-        except ValueError:
-            print("Invalid ID!")
+                print("No genres found.")
         except Exception as e:
             print(f"✗ Error: {e}")
     
@@ -325,6 +263,7 @@ class Menu:
             print("-" * 40)
             print("1. Add entry to watchlist")
             print("2. Find entry")
+            print("3. Show all watchlists")
             print("0. Back")
             print("-" * 40)
             
@@ -334,6 +273,8 @@ class Menu:
                 self._watchlist_entry_insert()
             elif choice == "2":
                 self._watchlist_entry_select_by_id()
+            elif choice == "3":
+                self._watchlist_view()
             elif choice == "0":
                 break
             else:
@@ -387,6 +328,30 @@ class Menu:
                 print("Entry was not found.")
         except ValueError:
             print("Invalid ID!")
+        except Exception as e:
+            print(f"✗ Error: {e}")
+    
+    def _watchlist_view(self):
+        print("\n--- All watchlists (view) ---")
+        
+        try:
+            conn = self.watchlist_entry_gw.db.get_connection()
+            cursor = conn.cursor()
+            cursor.execute("SELECT * FROM user_watchlist_view")
+            results = cursor.fetchall()
+            cursor.close()
+            
+            if results:
+                print(f"\n{'User':<20} {'Anime':<30} {'Score':<10}")
+                print("-" * 60)
+                for row in results:
+                    user_name = row[0] or "-"
+                    anime_name = row[1] or "-"
+                    score = row[2] if row[2] is not None else "-"
+                    print(f"{user_name:<20} {anime_name:<30} {score:<10}")
+                print("-" * 60)
+            else:
+                print("No watchlist entries found.")
         except Exception as e:
             print(f"✗ Error: {e}")
     
