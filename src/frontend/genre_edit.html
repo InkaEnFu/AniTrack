@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Genre - Animelist{% endblock %}
+
+{% block content %}
+<h1>Edit Genre</h1>
+
+<form method="POST">
+    <label>Genre Name *</label>
+    <input type="text" name="name" value="{{ genre[1] }}" required>
+    
+    <button type="submit" class="btn">Update Genre</button>
+    <a href="/genres" style="color: #aaa; margin-left: 15px;">Cancel</a>
+</form>
+{% endblock %}

@@ -22,6 +22,7 @@
             <th>Title (English)</th>
             <th>Status</th>
             <th>Genres</th>
+            <th>Actions</th>
         </tr>
     </thead>
     <tbody>
@@ -32,10 +33,14 @@
             <td>{{ a[2] or '-' }}</td>
             <td>{{ a[3] or '-' }}</td>
             <td>{{ a[4] or '-' }}</td>
+            <td>
+                <a href="/anime/edit/{{ a[0] }}">Edit</a>
+                <a href="/anime/delete/{{ a[0] }}" onclick="return confirm('Are you sure?')" style="color: #e94560; margin-left: 10px;">Delete</a>
+            </td>
         </tr>
         {% else %}
         <tr>
-            <td colspan="5" style="text-align: center;">No anime found.</td>
+            <td colspan="6" style="text-align: center;">No anime found.</td>
         </tr>
         {% endfor %}
     </tbody>

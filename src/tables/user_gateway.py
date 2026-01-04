@@ -27,3 +27,22 @@ class UserGateway:
         row = cursor.fetchone()
         cursor.close()
         return row
+
+    def update(self, id: int, username: str, email: str, is_admin: bool = False) -> bool:
+        conn = self.db.get_connection()
+        cursor = conn.cursor()
+        query = f"UPDATE {self.table_name} SET username = %s, email = %s, is_admin = %s WHERE id = %s"
+        cursor.execute(query, (username, email, is_admin, id))
+        conn.commit()
+        affected = cursor.rowcount
+        cursor.close()
+        return affected > 0
+
+    def delete(self, id: int) -> bool:
+        conn = self.db.get_connection()
+        cursor = conn.cursor()
+        cursor.execute(f"DELETE FROM {self.table_name} WHERE id = %s", (id,))
+        conn.commit()
+        affected = cursor.rowcount
+        cursor.close()
+        return affected > 0

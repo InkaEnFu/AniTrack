@@ -38,7 +38,9 @@
             <td>{{ user[1] }}</td>
             <td>{{ user[2] }}</td>
             <td>
-                <a href="/history/{{ user[0] }}">View History</a>
+                <a href="/users/edit/{{ user[0] }}">Edit</a>
+                <a href="/users/delete/{{ user[0] }}" onclick="return confirm('Are you sure?')" style="color: #e94560; margin-left: 10px;">Delete</a>
+                <a href="/history/{{ user[0] }}" style="margin-left: 10px;">History</a>
             </td>
         </tr>
         {% else %}

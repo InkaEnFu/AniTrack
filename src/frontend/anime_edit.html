@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Anime - Animelist{% endblock %}
+
+{% block content %}
+<h1>Edit Anime</h1>
+
+<form method="POST">
+    <label>Title (Romaji) *</label>
+    <input type="text" name="title_romaji" value="{{ anime[1] }}" required>
+    
+    <label>Title (English)</label>
+    <input type="text" name="title_english" value="{{ anime[2] or '' }}">
+    
+    <label>Episodes</label>
+    <input type="number" name="episodes" value="{{ anime[3] }}" min="0">
+    
+    <label>Status *</label>
+    <select name="status" required>
+        <option value="ONGOING" {% if anime[4] == 'ONGOING' %}selected{% endif %}>ONGOING</option>
+        <option value="FINISHED" {% if anime[4] == 'FINISHED' %}selected{% endif %}>FINISHED</option>
+    </select>
+    
+    <label>Start Date</label>
+    <input type="date" name="start_date" value="{{ anime[5] or '' }}">
+    
+    <label>External Score</label>
+    <input type="number" name="external_score" step="0.1" min="0" max="10" value="{{ anime[6] or '' }}">
+    
+    <button type="submit" class="btn">Update Anime</button>
+    <a href="/anime" style="color: #aaa; margin-left: 15px;">Cancel</a>
+</form>
+{% endblock %}

@@ -12,6 +12,7 @@
         <tr>
             <th>ID</th>
             <th>Name</th>
+            <th>Actions</th>
         </tr>
     </thead>
     <tbody>
@@ -19,10 +20,14 @@
         <tr>
             <td>{{ genre[0] }}</td>
             <td>{{ genre[1] }}</td>
+            <td>
+                <a href="/genres/edit/{{ genre[0] }}">Edit</a>
+                <a href="/genres/delete/{{ genre[0] }}" onclick="return confirm('Are you sure?')" style="color: #e94560; margin-left: 10px;">Delete</a>
+            </td>
         </tr>
         {% else %}
         <tr>
-            <td colspan="2">No genres found.</td>
+            <td colspan="3">No genres found.</td>
         </tr>
         {% endfor %}
     </tbody>

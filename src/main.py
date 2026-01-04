@@ -62,6 +62,37 @@ def anime_add():
     return render_template('anime_add.html', genres=genres)
 
 
+@app.route('/anime/edit/<int:id>', methods=['GET', 'POST'])
+def anime_edit(id):
+    if request.method == 'POST':
+        title_romaji = request.form['title_romaji']
+        title_english = request.form.get('title_english') or None
+        episodes = int(request.form.get('episodes') or 0)
+        status = request.form['status']
+        start_date = request.form.get('start_date') or None
+        external_score = float(request.form['external_score']) if request.form.get('external_score') else None
+        
+        try:
+            anime_gw.update(id, title_romaji, status, title_english, episodes, start_date, external_score)
+            flash('Anime updated successfully', 'success')
+            return redirect(url_for('anime_list'))
+        except Exception as e:
+            flash(f'Error: {e}', 'error')
+    
+    anime = anime_gw.select_by_id(id)
+    return render_template('anime_edit.html', anime=anime)
+
+
+@app.route('/anime/delete/<int:id>')
+def anime_delete(id):
+    try:
+        anime_gw.delete(id)
+        flash('Anime deleted successfully', 'success')
+    except Exception as e:
+        flash(f'Error: {e}', 'error')
+    return redirect(url_for('anime_list'))
+
+
 @app.route('/users')
 def user_list():
     conn = db.get_connection()
@@ -100,6 +131,34 @@ def user_add():
     return render_template('user_add.html')
 
 
+@app.route('/users/edit/<int:id>', methods=['GET', 'POST'])
+def user_edit(id):
+    if request.method == 'POST':
+        username = request.form['username']
+        email = request.form['email']
+        is_admin = 'is_admin' in request.form
+        
+        try:
+            user_gw.update(id, username, email, is_admin)
+            flash('User updated successfully', 'success')
+            return redirect(url_for('user_list'))
+        except Exception as e:
+            flash(f'Error: {e}', 'error')
+    
+    user = user_gw.select_by_id(id)
+    return render_template('user_edit.html', user=user)
+
+
+@app.route('/users/delete/<int:id>')
+def user_delete(id):
+    try:
+        user_gw.delete(id)
+        flash('User deleted successfully', 'success')
+    except Exception as e:
+        flash(f'Error: {e}', 'error')
+    return redirect(url_for('user_list'))
+
+
 @app.route('/genres')
 def genre_list():
     genres = genre_gw.select_all()
@@ -119,6 +178,32 @@ def genre_add():
             flash(f'Error: {e}', 'error')
     
     return render_template('genre_add.html')
+
+
+@app.route('/genres/edit/<int:id>', methods=['GET', 'POST'])
+def genre_edit(id):
+    if request.method == 'POST':
+        name = request.form['name']
+        
+        try:
+            genre_gw.update(id, name)
+            flash('Genre updated successfully', 'success')
+            return redirect(url_for('genre_list'))
+        except Exception as e:
+            flash(f'Error: {e}', 'error')
+    
+    genre = genre_gw.select_by_id(id)
+    return render_template('genre_edit.html', genre=genre)
+
+
+@app.route('/genres/delete/<int:id>')
+def genre_delete(id):
+    try:
+        genre_gw.delete(id)
+        flash('Genre deleted successfully', 'success')
+    except Exception as e:
+        flash(f'Error: {e}', 'error')
+    return redirect(url_for('genre_list'))
 
 
 @app.route('/watchlist')

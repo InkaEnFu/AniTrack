@@ -35,3 +35,22 @@ class GenreGateway:
         rows = cursor.fetchall()
         cursor.close()
         return rows
+
+    def update(self, id: int, name: str) -> bool:
+        conn = self.db.get_connection()
+        cursor = conn.cursor()
+        query = f"UPDATE {self.table_name} SET name = %s WHERE id = %s"
+        cursor.execute(query, (name, id))
+        conn.commit()
+        affected = cursor.rowcount
+        cursor.close()
+        return affected > 0
+
+    def delete(self, id: int) -> bool:
+        conn = self.db.get_connection()
+        cursor = conn.cursor()
+        cursor.execute(f"DELETE FROM {self.table_name} WHERE id = %s", (id,))
+        conn.commit()
+        affected = cursor.rowcount
+        cursor.close()
+        return affected > 0
