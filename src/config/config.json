@@ -2,9 +2,9 @@
     "database": {
         "host": "127.0.0.1",
         "port": 3306,
-        "user": "Matyas",
-        "password": "Heslo",
-        "database": "MatyasDatabaze"
+        "user": "AddValues",
+        "password": "AddValues",
+        "database": "AddValues"
     },
     "app": {
         "debug": true,

@@ -25,7 +25,7 @@ class Config:
     
     def load(self):
         if self._config is None:
-            config_path = os.path.join(os.path.dirname(__file__), "config.json")
+            config_path = os.path.join(os.path.dirname(__file__), "config", "config.json")
             try:
                 with open(config_path, "r", encoding="utf-8") as f:
                     self._config = json.load(f)
